@@ -31,12 +31,12 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <div className="bg-background min-h-screen py-8">
+    <div className="bg-slate-50 min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Link
           href="/"
-          className="inline-flex items-center text-slate-600 hover:text-slate-900 mb-6 font-medium"
+          className="inline-flex items-center text-slate-600 hover:text-slate-900 mb-6 font-medium bg-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
           Zpět na přehled
@@ -49,11 +49,11 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
             <ImageGallery images={listing.image_urls} title={listing.title} />
 
             {/* Title and Price */}
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
               <div className="mb-4">
                 <span
                   className={cn(
-                    "px-3 py-1 rounded-full text-sm font-semibold",
+                    "px-3 py-1 rounded-full text-sm font-semibold shadow-sm",
                     CATEGORY_COLORS[listing.category]
                   )}
                 >
@@ -67,21 +67,21 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
                 <MapPin className="h-5 w-5 mr-2" />
                 <span className="text-lg">{listing.location}</span>
               </div>
-              <div className="text-4xl font-extrabold text-amber-500">
+              <div className="text-4xl font-extrabold text-amber-500 bg-amber-50 inline-block px-4 py-2 rounded-lg">
                 {formatPrice(listing.price)}
               </div>
             </div>
 
             {/* Specifications */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-2xl font-bold text-slate-900 mb-4">
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+              <h2 className="text-2xl font-bold text-slate-900 mb-4 pb-3 border-b-2 border-amber-500">
                 Parametry
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {Object.entries(listing.features).map(([key, value]) => (
                   <div
                     key={key}
-                    className="flex justify-between items-center py-3 border-b border-slate-200 last:border-0"
+                    className="flex justify-between items-center py-3 px-4 bg-slate-50 rounded-lg"
                   >
                     <span className="text-slate-600 font-medium">{key}</span>
                     <span className="text-slate-900 font-semibold">{value}</span>
@@ -91,8 +91,8 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
             </div>
 
             {/* Description */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-2xl font-bold text-slate-900 mb-4">Popis</h2>
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+              <h2 className="text-2xl font-bold text-slate-900 mb-4 pb-3 border-b-2 border-amber-500">Popis</h2>
               <p className="text-slate-700 leading-relaxed text-lg">
                 {listing.description}
               </p>
@@ -101,7 +101,7 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Right Column - Contact Form */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-md p-6 sticky top-24">
+            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24 border border-slate-200">
               <ContactForm listingTitle={listing.title} />
             </div>
           </div>
@@ -115,7 +115,7 @@ function ImageGallery({ images, title }: { images: string[]; title: string }) {
   const [selectedImage, setSelectedImage] = useState(0);
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
       {/* Main Image */}
       <div className="relative h-96 md:h-[500px] bg-slate-200">
         <Image
@@ -129,7 +129,7 @@ function ImageGallery({ images, title }: { images: string[]; title: string }) {
 
       {/* Thumbnails */}
       {images.length > 1 && (
-        <div className="p-4 flex gap-4 overflow-x-auto">
+        <div className="p-4 flex gap-4 overflow-x-auto bg-slate-50">
           {images.map((image, index) => (
             <button
               key={index}
@@ -137,8 +137,8 @@ function ImageGallery({ images, title }: { images: string[]; title: string }) {
               className={cn(
                 "relative h-20 w-28 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all",
                 selectedImage === index
-                  ? "border-amber-500 ring-2 ring-amber-200"
-                  : "border-transparent hover:border-slate-300"
+                  ? "border-amber-500 ring-2 ring-amber-200 shadow-md"
+                  : "border-slate-300 hover:border-amber-300 hover:shadow-sm"
               )}
             >
               <Image

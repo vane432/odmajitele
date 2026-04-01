@@ -65,27 +65,29 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="bg-background min-h-screen py-8">
+    <div className="bg-slate-50 min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/"
-            className="inline-flex items-center text-slate-600 hover:text-slate-900 mb-4 font-medium"
+            className="inline-flex items-center text-slate-600 hover:text-slate-900 mb-4 font-medium bg-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Zpět na hlavní stránku
           </Link>
-          <h1 className="text-4xl font-bold text-slate-900">
-            Přidat nový inzerát
-          </h1>
-          <p className="text-slate-600 mt-2">
-            Vyplňte podrobnosti o vašem inzerátu
-          </p>
+          <div className="bg-gradient-to-r from-navy-900 to-slate-800 text-white rounded-xl p-8 shadow-lg">
+            <h1 className="text-4xl font-bold mb-2">
+              Přidat nový inzerát
+            </h1>
+            <p className="text-slate-200 text-lg">
+              Vyplňte podrobnosti o vašem inzerátu
+            </p>
+          </div>
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-xl shadow-md p-8">
+        <div className="bg-white rounded-xl shadow-lg p-8 border border-slate-200">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title */}
             <div>

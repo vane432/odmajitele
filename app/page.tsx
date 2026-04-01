@@ -12,12 +12,12 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-slate-50 to-slate-100 py-20">
+      <section className="bg-gradient-to-br from-navy-900 via-slate-800 to-slate-700 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-slate-900 mb-6 text-balance">
+          <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6 text-balance">
             Prémiový trh bez provize
           </h1>
-          <p className="text-xl md:text-2xl text-slate-600 mb-8 max-w-3xl mx-auto text-balance">
+          <p className="text-xl md:text-2xl text-slate-200 mb-8 max-w-3xl mx-auto text-balance">
             Kupujte a prodávejte nemovitosti, auta a firmy přímo od majitelů v Brně
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -30,7 +30,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/admin"
-              className="bg-white hover:bg-slate-50 text-slate-900 px-8 py-4 rounded-lg font-bold text-lg transition-all shadow-lg hover:shadow-xl border-2 border-slate-200 inline-flex items-center justify-center"
+              className="bg-white hover:bg-slate-50 text-slate-900 px-8 py-4 rounded-lg font-bold text-lg transition-all shadow-lg hover:shadow-xl border-2 border-white inline-flex items-center justify-center"
             >
               Přidat inzerát
             </Link>
@@ -39,7 +39,7 @@ export default function HomePage() {
       </section>
 
       {/* Category Tiles */}
-      <section id="category" className="py-20 bg-background">
+      <section id="category" className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-center mb-12 text-slate-900">
             Vyberte kategorii
@@ -71,7 +71,7 @@ export default function HomePage() {
       </section>
 
       {/* Latest Listings */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-12">
             <h2 className="text-4xl font-bold text-slate-900">
@@ -108,11 +108,11 @@ function CategoryCard({ title, description, icon, href, color }: CategoryCardPro
   return (
     <Link
       href={href}
-      className="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:scale-105"
+      className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:scale-105 border-2 border-slate-100"
     >
       <div className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity", color)} />
       <div className="p-8 relative">
-        <div className={cn("inline-flex p-4 rounded-xl bg-gradient-to-br text-white mb-4", color)}>
+        <div className={cn("inline-flex p-4 rounded-xl bg-gradient-to-br text-white mb-4 shadow-lg", color)}>
           {icon}
         </div>
         <h3 className="text-2xl font-bold text-slate-900 mb-2">{title}</h3>
@@ -141,7 +141,7 @@ function ListingCard({ listing }: ListingCardProps) {
   return (
     <Link
       href={`/listing/${listing.id}`}
-      className="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
+      className="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-200"
     >
       {/* Image */}
       <div className="relative h-64 bg-slate-200 overflow-hidden">
@@ -153,14 +153,14 @@ function ListingCard({ listing }: ListingCardProps) {
         />
         {/* Category Badge */}
         <div className="absolute top-4 left-4">
-          <span className={cn("px-3 py-1 rounded-full text-sm font-semibold", CATEGORY_COLORS[listing.category])}>
+          <span className={cn("px-3 py-1 rounded-full text-sm font-semibold shadow-md", CATEGORY_COLORS[listing.category])}>
             {CATEGORY_LABELS[listing.category]}
           </span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-6 bg-white">
         <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-amber-500 transition-colors line-clamp-2">
           {listing.title}
         </h3>
@@ -168,7 +168,7 @@ function ListingCard({ listing }: ListingCardProps) {
           <MapPin className="h-4 w-4 mr-1" />
           {listing.location}
         </div>
-        <div className="text-2xl font-extrabold text-slate-900">
+        <div className="text-2xl font-extrabold text-amber-500">
           {formatPrice(listing.price)}
         </div>
       </div>
