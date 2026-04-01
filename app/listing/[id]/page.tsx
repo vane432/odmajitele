@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin, ArrowLeft, Mail, Phone, User } from "lucide-react";
@@ -8,8 +8,9 @@ import { mockListings, formatPrice } from "@/lib/mockData";
 import { CATEGORY_LABELS, CATEGORY_COLORS } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export default function ListingDetailPage({ params }: { params: { id: string } }) {
-  const listing = mockListings.find((l) => l.id === params.id);
+export default function ListingDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const listing = mockListings.find((l) => l.id === id);
 
   if (!listing) {
     return (
