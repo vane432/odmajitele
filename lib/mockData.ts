@@ -1,6 +1,8 @@
 import { Listing } from './types';
 
-export const mockListings: Listing[] = [
+// Mock data is now deprecated - use API routes instead
+// This is kept only for the formatPrice function and backward compatibility
+export const mockListings: Partial<Listing>[] = [
   {
     id: '1',
     title: 'Luxusní byt 3+kk v centru Brna',

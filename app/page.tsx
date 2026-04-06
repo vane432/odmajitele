@@ -1,13 +1,21 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Building2, Car, Store, ArrowRight, MapPin } from "lucide-react";
-import { mockListings, formatPrice } from "@/lib/mockData";
-import { CATEGORY_LABELS, CATEGORY_COLORS } from "@/lib/types";
+import { formatPrice } from "@/lib/mockData";
+import { CATEGORY_LABELS, CATEGORY_COLORS, Listing } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/server";
 
-export default function HomePage() {
-  // Get latest 6 listings
-  const latestListings = mockListings.slice(0, 6);
+export default async function HomePage() {
+  // Fetch latest listings from Supabase
+  const supabase = await createClient();
+  const { data: listings } = await supabase
+    .from('listings')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(6);
+  
+  const latestListings = listings || [];
 
   return (
     <div>

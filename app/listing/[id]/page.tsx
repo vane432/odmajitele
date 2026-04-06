@@ -1,16 +1,46 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin, ArrowLeft, Mail, Phone, User } from "lucide-react";
-import { mockListings, formatPrice } from "@/lib/mockData";
-import { CATEGORY_LABELS, CATEGORY_COLORS } from "@/lib/types";
+import { formatPrice } from "@/lib/mockData";
+import { CATEGORY_LABELS, CATEGORY_COLORS, Listing } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export default function ListingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const listing = mockListings.find((l) => l.id === id);
+  const [listing, setListing] = useState<Listing | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchListing() {
+      try {
+        const response = await fetch(`/api/listings/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setListing(data);
+        }
+      } catch (error) {
+        console.error('Error fetching listing:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchListing();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto mb-4"></div>
+          <p className="text-slate-600">Načítání...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!listing) {
     return (

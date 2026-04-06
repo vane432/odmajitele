@@ -10,7 +10,9 @@ export interface Listing {
   features: Record<string, string>;
   image_urls: string[];
   owner_email: string;
+  owner_id: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 export const CATEGORY_LABELS: Record<Category, string> = {
