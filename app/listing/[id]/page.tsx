@@ -132,7 +132,7 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
           {/* Right Column - Contact Form */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24 border border-slate-200">
-              <ContactForm listingTitle={listing.title} />
+              <ContactForm listingTitle={listing.title} listing={listing} />
             </div>
           </div>
         </div>
@@ -185,7 +185,7 @@ function ImageGallery({ images, title }: { images: string[]; title: string }) {
   );
 }
 
-function ContactForm({ listingTitle }: { listingTitle: string }) {
+function ContactForm({ listingTitle, listing }: { listingTitle: string; listing?: any }) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -193,10 +193,51 @@ function ContactForm({ listingTitle }: { listingTitle: string }) {
     message: `Dobrý den,\n\nmám zájem o inzerát: ${listingTitle}\n\nProsím o kontakt.\n\nDěkuji`,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Contact form submitted:", formData);
-    alert("Zpráva byla odeslána! (MVP: Data jsou zobrazena v konzoli)");
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+          listingTitle: listingTitle,
+          ownerEmail: listing?.owner_email,
+        }),
+      });
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          message: `Dobrý den,\n\nmám zájem o inzerát: ${listingTitle}\n\nProsím o kontakt.\n\nDěkuji`,
+        });
+        alert('✅ Zpráva byla úspěšně odeslána!');
+      } else {
+        const error = await response.json();
+        setSubmitStatus('error');
+        alert(`❌ Chyba při odesílání: ${error.error || 'Neznámá chyba'}`);
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+      setSubmitStatus('error');
+      alert('❌ Chyba sítě. Zkuste to znovu.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -284,9 +325,14 @@ function ContactForm({ listingTitle }: { listingTitle: string }) {
 
         <button
           type="submit"
-          className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 rounded-lg transition-colors shadow-lg hover:shadow-xl"
+          disabled={isSubmitting}
+          className={`w-full font-bold py-4 rounded-lg transition-colors shadow-lg hover:shadow-xl ${
+            isSubmitting 
+              ? 'bg-slate-400 cursor-not-allowed text-slate-200' 
+              : 'bg-amber-500 hover:bg-amber-600 text-white'
+          }`}
         >
-          Odeslat zprávu
+          {isSubmitting ? 'Odesílá se...' : 'Odeslat zprávu'}
         </button>
       </form>
 

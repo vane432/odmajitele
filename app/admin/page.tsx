@@ -12,16 +12,80 @@ export default function AdminPage() {
     price: "",
     location: "Brno",
     description: "",
+    owner_email: "",
     features: [{ key: "", value: "" }],
     imageUrls: [""],
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Listing submitted:", formData);
-    alert(
-      "Inzerát byl úspěšně vytvořen! (MVP: Data jsou zobrazena v konzoli)\n\nV produkční verzi se data uloží do Supabase."
-    );
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      // Transform features array to object
+      const featuresObject = formData.features.reduce((acc, feature) => {
+        if (feature.key && feature.value) {
+          acc[feature.key] = feature.value;
+        }
+        return acc;
+      }, {} as Record<string, string>);
+
+      // Filter out empty image URLs
+      const imageUrls = formData.imageUrls.filter(url => url.trim() !== '');
+
+      const listingData = {
+        title: formData.title,
+        category: formData.category,
+        price: parseInt(formData.price),
+        location: formData.location,
+        description: formData.description,
+        owner_email: formData.owner_email,
+        features: featuresObject,
+        image_urls: imageUrls,
+      };
+
+      const response = await fetch('/api/listings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(listingData),
+      });
+
+      if (response.ok) {
+        const newListing = await response.json();
+        setSubmitStatus('success');
+        
+        // Reset form
+        setFormData({
+          title: "",
+          category: "nemovitosti" as Category,
+          price: "",
+          location: "Brno",
+          description: "",
+          owner_email: "",
+          features: [{ key: "", value: "" }],
+          imageUrls: [""],
+        });
+
+        alert(`✅ Inzerát "${newListing.title}" byl úspěšně vytvořen!\n\nID: ${newListing.id}`);
+      } else {
+        const error = await response.json();
+        console.error('Error creating listing:', error);
+        setSubmitStatus('error');
+        alert(`❌ Chyba při vytváření inzerátu: ${error.error || 'Neznámá chyba'}`);
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+      setSubmitStatus('error');
+      alert('❌ Chyba sítě. Zkuste to znovu.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const addFeature = () => {
@@ -163,6 +227,24 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {/* Owner Email */}
+            <div>
+              <label htmlFor="owner_email" className="block text-sm font-bold text-slate-700 mb-2">
+                Kontaktní e-mail *
+              </label>
+              <input
+                type="email"
+                id="owner_email"
+                required
+                value={formData.owner_email}
+                onChange={(e) =>
+                  setFormData({ ...formData, owner_email: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none"
+                placeholder="vas@email.cz"
+              />
+            </div>
+
             {/* Description */}
             <div>
               <label htmlFor="description" className="block text-sm font-bold text-slate-700 mb-2">
@@ -269,12 +351,19 @@ export default function AdminPage() {
             <div className="pt-6 border-t border-slate-200">
               <button
                 type="submit"
-                className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 rounded-lg transition-colors shadow-lg hover:shadow-xl"
+                disabled={isSubmitting}
+                className={`w-full font-bold py-4 rounded-lg transition-colors shadow-lg hover:shadow-xl ${
+                  isSubmitting 
+                    ? 'bg-slate-400 cursor-not-allowed text-slate-200' 
+                    : 'bg-amber-500 hover:bg-amber-600 text-white'
+                }`}
               >
-                Vytvořit inzerát
+                {isSubmitting ? 'Vytváří se...' : 'Vytvořit inzerát'}
               </button>
               <p className="text-sm text-slate-500 mt-4 text-center">
-                MVP: Data se zobrazí v konzoli prohlížeče. V produkční verzi se uloží do Supabase.
+                {submitStatus === 'success' && '✅ Inzerát byl úspěšně vytvořen!'}
+                {submitStatus === 'error' && '❌ Chyba při vytváření inzerátu'}
+                {submitStatus === 'idle' && 'Inzerát bude uložen do databáze Supabase.'}
               </p>
             </div>
           </form>
