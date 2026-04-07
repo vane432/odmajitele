@@ -12,10 +12,15 @@ export default function LoginPage() {
     setIsLoading(true);
     const supabase = createClient();
     
+    // Use the current domain for redirect, but ensure it works in production
+    const redirectUrl = typeof window !== 'undefined' 
+      ? `${window.location.origin}/auth/callback`
+      : '/auth/callback';
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectUrl,
       },
     });
 
