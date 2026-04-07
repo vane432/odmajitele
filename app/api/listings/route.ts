@@ -48,13 +48,13 @@ export async function POST(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    // For now, allow unauthenticated users to create listings (we'll protect this when auth is ready)
-    // if (!user) {
-    //   return NextResponse.json(
-    //     { error: 'Unauthorized' },
-    //     { status: 401 }
-    //   );
-    // }
+    // Require authentication for creating listings
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Vyžadováno přihlášení' },
+        { status: 401 }
+      );
+    }
 
     const body = await request.json();
     const { title, category, price, location, description, features, image_urls, owner_email } = body;
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       features: features || {},
       image_urls: image_urls || [],
       owner_email,
-      owner_id: user?.id || null,
+      owner_id: user.id,
     };
 
     const { data, error } = await supabase

@@ -54,13 +54,13 @@ export async function PUT(
       data: { user },
     } = await supabase.auth.getUser();
 
-    // For now, allow unauthenticated updates (we'll protect this when auth is ready)
-    // if (!user) {
-    //   return NextResponse.json(
-    //     { error: 'Unauthorized' },
-    //     { status: 401 }
-    //   );
-    // }
+    // Require authentication for updates
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Vyžadováno přihlášení' },
+        { status: 401 }
+      );
+    }
 
     const body = await request.json();
     const { title, category, price, location, description, features, image_urls } = body;
@@ -121,13 +121,13 @@ export async function DELETE(
       data: { user },
     } = await supabase.auth.getUser();
 
-    // For now, allow unauthenticated deletes (we'll protect this when auth is ready)
-    // if (!user) {
-    //   return NextResponse.json(
-    //     { error: 'Unauthorized' },
-    //     { status: 401 }
-    //   );
-    // }
+    // Require authentication for deletes
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Vyžadováno přihlášení' },
+        { status: 401 }
+      );
+    }
 
     const { error } = await supabase
       .from('listings')
