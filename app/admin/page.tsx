@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, X, Upload } from "lucide-react";
+import { ArrowLeft, Plus, X } from "lucide-react";
 import { Category } from "@/lib/types";
+import { ImageUpload } from "@/components/ImageUpload";
 
 export default function AdminPage() {
   const [formData, setFormData] = useState({
@@ -14,7 +15,7 @@ export default function AdminPage() {
     description: "",
     owner_email: "",
     features: [{ key: "", value: "" }],
-    imageUrls: [""],
+    imageUrls: [] as string[],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,8 +35,8 @@ export default function AdminPage() {
         return acc;
       }, {} as Record<string, string>);
 
-      // Filter out empty image URLs
-      const imageUrls = formData.imageUrls.filter(url => url.trim() !== '');
+      // Use uploaded images
+      const imageUrls = formData.imageUrls;
 
       const listingData = {
         title: formData.title,
@@ -69,7 +70,7 @@ export default function AdminPage() {
           description: "",
           owner_email: "",
           features: [{ key: "", value: "" }],
-          imageUrls: [""],
+          imageUrls: [],
         });
 
         alert(`✅ Inzerát "${newListing.title}" byl úspěšně vytvořen!\n\nID: ${newListing.id}`);
@@ -108,24 +109,8 @@ export default function AdminPage() {
     setFormData({ ...formData, features: newFeatures });
   };
 
-  const addImageUrl = () => {
-    setFormData({
-      ...formData,
-      imageUrls: [...formData.imageUrls, ""],
-    });
-  };
-
-  const removeImageUrl = (index: number) => {
-    setFormData({
-      ...formData,
-      imageUrls: formData.imageUrls.filter((_, i) => i !== index),
-    });
-  };
-
-  const updateImageUrl = (index: number, value: string) => {
-    const newImageUrls = [...formData.imageUrls];
-    newImageUrls[index] = value;
-    setFormData({ ...formData, imageUrls: newImageUrls });
+  const handleImageUpload = (urls: string[]) => {
+    setFormData({ ...formData, imageUrls: urls });
   };
 
   return (
@@ -309,43 +294,13 @@ export default function AdminPage() {
               </button>
             </div>
 
-            {/* Image URLs */}
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">
-                URL obrázků
-              </label>
-              <p className="text-sm text-slate-500 mb-3">
-                Zadejte URL adresy obrázků (v produkční verzi nahrajete obrázky přímo)
-              </p>
-              <div className="space-y-3">
-                {formData.imageUrls.map((url, index) => (
-                  <div key={index} className="flex gap-3">
-                    <input
-                      type="url"
-                      value={url}
-                      onChange={(e) => updateImageUrl(index, e.target.value)}
-                      className="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none"
-                      placeholder="https://example.com/image.jpg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImageUrl(index)}
-                      className="px-4 py-3 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={addImageUrl}
-                className="mt-3 inline-flex items-center px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-medium"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Přidat obrázek
-              </button>
-            </div>
+            {/* Image Upload */}
+            <ImageUpload
+              onUpload={handleImageUpload}
+              currentImages={formData.imageUrls}
+              maxImages={8}
+              className=""
+            />
 
             {/* Submit Button */}
             <div className="pt-6 border-t border-slate-200">
