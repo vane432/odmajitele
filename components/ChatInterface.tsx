@@ -1,6 +1,6 @@
 'use client';
 
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
 import { Send, Sparkles, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -19,22 +19,22 @@ const SUGGESTED_PROMPTS: SuggestedPrompt[] = [
 ];
 
 export default function ChatInterface() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const { messages, sendMessage, status } = useChat({
     api: '/api/chat',
   });
   
-  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
+  const [input, setInput] = useState('');
+  const isLoading = status === 'in_progress';
 
   const handlePromptClick = (promptText: string) => {
-    setSelectedPrompt(promptText);
-    handleInputChange({ target: { value: promptText } } as any);
+    setInput(promptText);
   };
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    handleSubmit(e);
-    setSelectedPrompt(null);
+    if (!input.trim() || isLoading) return;
+    sendMessage({ role: 'user', content: input });
+    setInput('');
   };
 
   return (
@@ -123,7 +123,7 @@ export default function ChatInterface() {
           <input
             type="text"
             value={input}
-            onChange={handleInputChange}
+            onChange={(e) => setInput(e.target.value)}
             placeholder="Napište, co hledáte... (např. 'rodinný dům v Brně')"
             className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             disabled={isLoading}
