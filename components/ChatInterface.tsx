@@ -1,12 +1,17 @@
 'use client';
 
-import { useChat } from '@ai-sdk/react';
 import { Send, Sparkles, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface SuggestedPrompt {
   text: string;
   icon: string;
+}
+
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
 }
 
 const SUGGESTED_PROMPTS: SuggestedPrompt[] = [
@@ -19,22 +24,101 @@ const SUGGESTED_PROMPTS: SuggestedPrompt[] = [
 ];
 
 export default function ChatInterface() {
-  const { messages, sendMessage, status } = useChat({
-    api: '/api/chat',
-  });
-  
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const isLoading = status === 'in_progress';
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handlePromptClick = (promptText: string) => {
     setInput(promptText);
   };
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    sendMessage({ role: 'user', content: input });
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: input.trim(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
     setInput('');
+    setIsLoading(true);
+
+    // Create assistant message placeholder
+    const assistantMessageId = (Date.now() + 1).toString();
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+    };
+    setMessages((prev) => [...prev, assistantMessage]);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map(m => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response');
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error('No response body');
+      }
+
+      let accumulatedText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        accumulatedText += chunk;
+
+        // Update the assistant message with accumulated text
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMessageId
+              ? { ...msg, content: accumulatedText }
+              : msg
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? { ...msg, content: 'Omlouváme se, došlo k chybě. Zkuste to prosím znovu.' }
+            : msg
+        )
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -115,6 +199,7 @@ export default function ChatInterface() {
             </div>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}
