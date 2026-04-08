@@ -11,7 +11,7 @@ RETURNS TABLE (
   id uuid,
   title text,
   category text,
-  price numeric,
+  price bigint,
   location text,
   description text,
   features jsonb,
