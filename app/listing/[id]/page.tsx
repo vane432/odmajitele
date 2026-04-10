@@ -143,13 +143,18 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
 
 function ImageGallery({ images, title }: { images: string[]; title: string }) {
   const [selectedImage, setSelectedImage] = useState(0);
+  const safeImages =
+    images && images.length > 0
+      ? images
+      : ['https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80'];
+  const currentImage = safeImages[selectedImage] || safeImages[0];
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
       {/* Main Image */}
       <div className="relative h-96 md:h-[500px] bg-slate-200">
         <Image
-          src={images[selectedImage]}
+          src={currentImage}
           alt={title}
           fill
           className="object-cover"
@@ -158,9 +163,9 @@ function ImageGallery({ images, title }: { images: string[]; title: string }) {
       </div>
 
       {/* Thumbnails */}
-      {images.length > 1 && (
+      {safeImages.length > 1 && (
         <div className="p-4 flex gap-4 overflow-x-auto bg-slate-50">
-          {images.map((image, index) => (
+          {safeImages.map((image, index) => (
             <button
               key={index}
               onClick={() => setSelectedImage(index)}

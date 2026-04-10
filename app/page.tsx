@@ -175,6 +175,9 @@ interface ListingCardProps {
 }
 
 function ListingCard({ listing }: ListingCardProps) {
+  const imageSrc =
+    listing.image_urls?.[0] ||
+    'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80';
   return (
     <Link
       href={`/listing/${listing.id}`}
@@ -183,7 +186,7 @@ function ListingCard({ listing }: ListingCardProps) {
       {/* Image */}
       <div className="relative h-64 bg-slate-200 overflow-hidden">
         <Image
-          src={listing.image_urls[0]}
+          src={imageSrc}
           alt={listing.title}
           fill
           className="object-cover group-hover:scale-110 transition-transform duration-300"
