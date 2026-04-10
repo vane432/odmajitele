@@ -5,8 +5,38 @@ import { Navbar } from '@/components/Navbar';
 import { FloatingChatButton } from '@/components/FloatingChatButton';
 
 export const metadata: Metadata = {
-  title: "OdMajitele.com - Prémiový trh bez provize",
-  description: "Kupujte a prodávejte nemovitosti, auta a firmy přímo od majitelů v Brně",
+  metadataBase: new URL("https://odmajitele.com"),
+  title: {
+    default: "Od Majitele | OdMajitele.com",
+    template: "%s | OdMajitele.com",
+  },
+  description:
+    "Od Majitele: Kupujte a prodávejte nemovitosti, auta a firmy přímo od majitelů v Brně. Bez realitky, bez provize.",
+  keywords: [
+    "od majitele",
+    "od majitele brno",
+    "nemovitosti od majitele",
+    "auta od majitele",
+    "firmy na prodej od majitele",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Od Majitele | OdMajitele.com",
+    description:
+      "Kupujte a prodávejte přímo od majitelů v Brně. Nemovitosti, auta a firmy bez provize.",
+    url: "https://odmajitele.com",
+    siteName: "OdMajitele.com",
+    locale: "cs_CZ",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Od Majitele | OdMajitele.com",
+    description:
+      "Nemovitosti, auta a firmy od majitele v Brně. Bez realitky a bez provize.",
+  },
 };
 
 export default function RootLayout({

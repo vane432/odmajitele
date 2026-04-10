@@ -1,6 +1,14 @@
 import ChatInterface from '@/components/ChatInterface';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "AI Vyhledávač Od Majitele",
+  description:
+    "AI asistent Od Majitele vám pomůže najít nemovitosti, auta a firmy od majitelů v Brně rychleji než klasické filtry.",
+  alternates: { canonical: "/chat" },
+};
 
 export default function ChatPage() {
   return (

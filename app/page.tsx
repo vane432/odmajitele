@@ -5,6 +5,14 @@ import { formatPrice } from "@/lib/mockData";
 import { CATEGORY_LABELS, CATEGORY_COLORS, Listing } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Od Majitele Brno - Nemovitosti, Auta a Firmy bez Provize",
+  description:
+    "Od Majitele Brno: Aktuální nabídky nemovitostí, aut a firem přímo od vlastníků. Bez provize, přímý kontakt na majitele.",
+  alternates: { canonical: "/" },
+};
 
 export default async function HomePage() {
   // Fetch latest listings from Supabase
@@ -23,7 +31,7 @@ export default async function HomePage() {
       <section className="bg-gradient-to-br from-navy-900 via-slate-800 to-slate-700 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6 text-balance">
-            Prémiový trh bez provize
+            Od Majitele v Brně bez provize
           </h1>
           <p className="text-xl md:text-2xl text-slate-200 mb-8 max-w-3xl mx-auto text-balance">
             Kupujte a prodávejte nemovitosti, auta a firmy přímo od majitelů v Brně
