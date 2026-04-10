@@ -1,5 +1,5 @@
 import { openai } from '@ai-sdk/openai';
-import { streamText } from 'ai';
+import { generateText } from 'ai';
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { generateEmbedding } from '@/lib/openai';
@@ -159,9 +159,9 @@ PŘÍKLAD ODPOVĚDI:
 
 Chcete se podívat na některou z těchto nabídek podrobněji?"`;
 
-    // Step 5: Stream LLM response; fallback to deterministic response if model fails
+    // Step 5: Generate stable LLM response; fallback to deterministic response if model fails
     try {
-      const result = streamText({
+      const result = await generateText({
         model: openai('gpt-4o-mini'),
         messages: [
           { role: 'system', content: systemPrompt },
@@ -170,7 +170,9 @@ Chcete se podívat na některou z těchto nabídek podrobněji?"`;
         temperature: 0.7,
       });
 
-      return result.toTextStreamResponse();
+      return new Response(result.text, {
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      });
     } catch (llmErr) {
       console.error('LLM failed, returning fallback response:', llmErr);
       return new Response(formatListingsFallback(userQuery, relevantListings), {
