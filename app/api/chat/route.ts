@@ -17,6 +17,34 @@ type ListingMatch = {
   similarity?: number;
 };
 
+type ListingCategory = 'nemovitosti' | 'auta' | 'firmy';
+
+function detectCategoryIntent(query: string): ListingCategory | null {
+  const q = query.toLowerCase();
+
+  const businessWords = [
+    'firma',
+    'firmu',
+    'byznys',
+    'business',
+    'podnik',
+    'kavarna',
+    'kavárna',
+    'restaurace',
+    'e-shop',
+    'eshop',
+  ];
+  if (businessWords.some((w) => q.includes(w))) return 'firmy';
+
+  const carWords = ['auto', 'auta', 'vuz', 'vůz', 'car', 'bmw', 'mercedes', 'skoda', 'škoda'];
+  if (carWords.some((w) => q.includes(w))) return 'auta';
+
+  const propertyWords = ['byt', 'dum', 'dům', 'nemovitost', 'pozemek', 'apartment', 'house', 'flat'];
+  if (propertyWords.some((w) => q.includes(w))) return 'nemovitosti';
+
+  return null;
+}
+
 function extractKeywords(query: string) {
   return query
     .toLowerCase()
@@ -66,6 +94,7 @@ export async function POST(req: NextRequest) {
     // Get the latest user message
     const lastMessage = messages[messages.length - 1];
     const userQuery = lastMessage.content;
+    const intentCategory = detectCategoryIntent(userQuery);
 
     console.log(`\n🔍 AI Search Query: "${userQuery}"\n`);
     const supabase = await createClient();
@@ -90,6 +119,10 @@ export async function POST(req: NextRequest) {
       console.error('Embedding failed, falling back to keyword search:', embedErr);
     }
 
+    if (intentCategory) {
+      relevantListings = relevantListings.filter((l) => l.category === intentCategory);
+    }
+
     // Fallback also when semantic search returns no results
     if (!relevantListings.length) {
       const keywords = extractKeywords(userQuery);
@@ -97,23 +130,27 @@ export async function POST(req: NextRequest) {
         const keywordOr = keywords
           .map((kw) => `title.ilike.%${kw}%,description.ilike.%${kw}%,location.ilike.%${kw}%`)
           .join(',');
-        const { data } = await supabase
+        let query = supabase
           .from('listings')
           .select('id,title,category,price,location,description,features')
-          .or(keywordOr)
-          .order('created_at', { ascending: false })
-          .limit(5);
+          .or(keywordOr);
+        if (intentCategory) {
+          query = query.eq('category', intentCategory);
+        }
+        const { data } = await query.order('created_at', { ascending: false }).limit(5);
         relevantListings = (data ?? []) as ListingMatch[];
       }
     }
 
     // Last-resort fallback so assistant never says "nothing" when listings exist
     if (!relevantListings.length) {
-      const { data } = await supabase
+      let query = supabase
         .from('listings')
-        .select('id,title,category,price,location,description,features')
-        .order('created_at', { ascending: false })
-        .limit(5);
+        .select('id,title,category,price,location,description,features');
+      if (intentCategory) {
+        query = query.eq('category', intentCategory);
+      }
+      const { data } = await query.order('created_at', { ascending: false }).limit(5);
       relevantListings = (data ?? []) as ListingMatch[];
     }
 
