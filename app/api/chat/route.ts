@@ -19,28 +19,25 @@ type ListingMatch = {
 
 type ListingCategory = 'nemovitosti' | 'auta' | 'firmy';
 
+function normalizeText(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 function detectCategoryIntent(query: string): ListingCategory | null {
-  const q = query.toLowerCase();
+  const q = normalizeText(query);
 
-  const businessWords = [
-    'firma',
-    'firmu',
-    'byznys',
-    'business',
-    'podnik',
-    'kavarna',
-    'kavárna',
-    'restaurace',
-    'e-shop',
-    'eshop',
-  ];
-  if (businessWords.some((w) => q.includes(w))) return 'firmy';
+  // Root-based matching handles Czech inflections (e.g. kavarna/kavarnu/kavarne)
+  const businessRoots = ['firm', 'byznys', 'business', 'podnik', 'kavar', 'restaur', 'eshop'];
+  if (businessRoots.some((w) => q.includes(w))) return 'firmy';
 
-  const carWords = ['auto', 'auta', 'vuz', 'vůz', 'car', 'bmw', 'mercedes', 'skoda', 'škoda'];
-  if (carWords.some((w) => q.includes(w))) return 'auta';
+  const carRoots = ['auto', 'vuz', 'car', 'bmw', 'mercedes', 'skoda'];
+  if (carRoots.some((w) => q.includes(w))) return 'auta';
 
-  const propertyWords = ['byt', 'dum', 'dům', 'nemovitost', 'pozemek', 'apartment', 'house', 'flat'];
-  if (propertyWords.some((w) => q.includes(w))) return 'nemovitosti';
+  const propertyRoots = ['byt', 'dum', 'nemovitost', 'pozem', 'apartment', 'house', 'flat'];
+  if (propertyRoots.some((w) => q.includes(w))) return 'nemovitosti';
 
   return null;
 }
