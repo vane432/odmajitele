@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     // Upload to Supabase Storage
     const uploader = adminSupabase ?? supabase;
     const { data, error } = await uploader.storage
-      .from('listing-images')
+      .from('listing-image')
       .upload(fileName, uint8Array, {
         contentType: file.type,
         upsert: false,
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     // Get public URL
     const { data: urlData } = supabase.storage
-      .from('listing-images')
+      .from('listing-image')
       .getPublicUrl(fileName);
 
     return NextResponse.json({
