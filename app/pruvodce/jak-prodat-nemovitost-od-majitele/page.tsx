@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Jak prodat nemovitost od majitele v Brně',
@@ -20,6 +21,10 @@ export default function SellPropertyGuidePage() {
       <p>Dobré světlo, čistý interiér a jasný popis výrazně zvýší zájem kupujících.</p>
       <h2>3. Bezpečný právní proces</h2>
       <p>Rezervační smlouva, advokátní úschova a kontrola v katastru jsou základ.</p>
+      <p>
+        Pro aktuální nabídky přejděte do kategorie{' '}
+        <Link href="/kategorie/nemovitosti">nemovitosti od majitele</Link>.
+      </p>
     </div>
   );
 }

@@ -30,6 +30,10 @@ export default function GuidePage() {
       <p>
         Chcete začít rovnou hledat? Vyzkoušejte náš <Link href="/chat">AI vyhledávač od majitele</Link>.
       </p>
+      <p>
+        Nebo přejděte přímo do kategorií: <Link href="/kategorie/nemovitosti">nemovitosti</Link>,{' '}
+        <Link href="/kategorie/auta">auta</Link> a <Link href="/kategorie/firmy">firmy od majitele</Link>.
+      </p>
     </div>
   );
 }

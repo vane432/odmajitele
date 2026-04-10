@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Jak koupit auto od majitele: kontrolní checklist',
@@ -25,6 +26,10 @@ export default function BuyCarGuidePage() {
         <li>Malý a velký technický průkaz</li>
         <li>Potvrzení o evidenční kontrole</li>
       </ul>
+      <p>
+        Prohlédněte si také aktuální nabídky v sekci{' '}
+        <Link href="/kategorie/auta">auta od majitele</Link>.
+      </p>
     </div>
   );
 }
