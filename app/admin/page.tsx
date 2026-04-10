@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Plus, X } from "lucide-react";
 import { Category } from "@/lib/types";
@@ -20,6 +20,51 @@ export default function AdminPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [myListings, setMyListings] = useState<any[]>([]);
+  const [loadingMyListings, setLoadingMyListings] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const loadMyListings = async () => {
+    setLoadingMyListings(true);
+    try {
+      const response = await fetch('/api/listings?mine=true');
+      if (response.ok) {
+        const data = await response.json();
+        setMyListings(data);
+      }
+    } finally {
+      setLoadingMyListings(false);
+    }
+  };
+
+  const startEdit = (listing: any) => {
+    setEditingId(listing.id);
+    const featureEntries = Object.entries(listing.features || {}).map(([key, value]) => ({
+      key,
+      value: String(value),
+    }));
+    setFormData({
+      title: listing.title || '',
+      category: listing.category,
+      price: String(listing.price || ''),
+      location: listing.location || 'Brno',
+      description: listing.description || '',
+      owner_email: listing.owner_email || '',
+      features: featureEntries.length ? featureEntries : [{ key: '', value: '' }],
+      imageUrls: listing.image_urls || [],
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const deleteListing = async (id: string) => {
+    if (!confirm('Opravdu chcete smazat tento inzerát?')) return;
+    const response = await fetch(`/api/listings/${id}`, { method: 'DELETE' });
+    if (response.ok) {
+      await loadMyListings();
+    } else {
+      alert('❌ Nepodařilo se smazat inzerát');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,8 +94,10 @@ export default function AdminPage() {
         image_urls: imageUrls,
       };
 
-      const response = await fetch('/api/listings', {
-        method: 'POST',
+      const endpoint = editingId ? `/api/listings/${editingId}` : '/api/listings';
+      const method = editingId ? 'PUT' : 'POST';
+      const response = await fetch(endpoint, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -58,7 +105,7 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        const newListing = await response.json();
+        const listing = await response.json();
         setSubmitStatus('success');
         
         // Reset form
@@ -73,7 +120,9 @@ export default function AdminPage() {
           imageUrls: [],
         });
 
-        alert(`✅ Inzerát "${newListing.title}" byl úspěšně vytvořen!\n\nID: ${newListing.id}`);
+        setEditingId(null);
+        await loadMyListings();
+        alert(`✅ Inzerát "${listing.title}" byl úspěšně ${method === 'POST' ? 'vytvořen' : 'upraven'}!`);
       } else {
         const error = await response.json();
         console.error('Error creating listing:', error);
@@ -88,6 +137,10 @@ export default function AdminPage() {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    loadMyListings();
+  }, []);
 
   const addFeature = () => {
     setFormData({
@@ -127,7 +180,7 @@ export default function AdminPage() {
           </Link>
           <div className="bg-gradient-to-r from-navy-900 to-slate-800 text-white rounded-xl p-8 shadow-lg">
             <h1 className="text-4xl font-bold mb-2">
-              Přidat nový inzerát
+              {editingId ? 'Upravit inzerát' : 'Přidat nový inzerát'}
             </h1>
             <p className="text-slate-200 text-lg">
               Vyplňte podrobnosti o vašem inzerátu
@@ -313,7 +366,7 @@ export default function AdminPage() {
                     : 'bg-amber-500 hover:bg-amber-600 text-white'
                 }`}
               >
-                {isSubmitting ? 'Vytváří se...' : 'Vytvořit inzerát'}
+                {isSubmitting ? 'Ukládá se...' : editingId ? 'Uložit změny' : 'Vytvořit inzerát'}
               </button>
               <p className="text-sm text-slate-500 mt-4 text-center">
                 {submitStatus === 'success' && '✅ Inzerát byl úspěšně vytvořen!'}
@@ -322,6 +375,42 @@ export default function AdminPage() {
               </p>
             </div>
           </form>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-lg p-8 border border-slate-200 mt-8">
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">Moje inzeráty</h2>
+          {loadingMyListings ? (
+            <p className="text-slate-500">Načítání...</p>
+          ) : myListings.length === 0 ? (
+            <p className="text-slate-500">Zatím nemáte žádné inzeráty.</p>
+          ) : (
+            <div className="space-y-3">
+              {myListings.map((listing) => (
+                <div key={listing.id} className="border border-slate-200 rounded-lg p-4 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-slate-900">{listing.title}</p>
+                    <p className="text-sm text-slate-500">{listing.location} • {listing.price?.toLocaleString('cs-CZ')} CZK</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => startEdit(listing)}
+                      className="px-3 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200"
+                    >
+                      Upravit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteListing(listing.id)}
+                      className="px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200"
+                    >
+                      Smazat
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

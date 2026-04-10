@@ -7,11 +7,27 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const searchParams = request.nextUrl.searchParams;
     const category = searchParams.get('category');
+    const mine = searchParams.get('mine') === 'true';
 
     let query = supabase
       .from('listings')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (mine) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        return NextResponse.json(
+          { error: 'Vyžadováno přihlášení' },
+          { status: 401 }
+        );
+      }
+
+      query = query.eq('owner_id', user.id);
+    }
 
     // Filter by category if provided
     if (category && ['nemovitosti', 'auta', 'firmy'].includes(category)) {

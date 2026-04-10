@@ -1,9 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
+    const adminSupabase = createAdminClient();
     
     // Check authentication
     const {
@@ -56,7 +58,7 @@ export async function POST(request: NextRequest) {
     const uint8Array = new Uint8Array(arrayBuffer);
 
     // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
+    const { data, error } = await adminSupabase.storage
       .from('listing-images')
       .upload(fileName, uint8Array, {
         contentType: file.type,
