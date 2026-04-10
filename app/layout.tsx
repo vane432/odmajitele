@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
 import { Navbar } from '@/components/Navbar';
+import { FloatingChatButton } from '@/components/FloatingChatButton';
 
 export const metadata: Metadata = {
   title: "OdMajitele.com - Prémiový trh bez provize",
@@ -18,6 +19,7 @@ export default function RootLayout({
       <body className="antialiased">
         <Navbar />
         <main className="min-h-screen">{children}</main>
+        <FloatingChatButton />
         <Footer />
       </body>
     </html>

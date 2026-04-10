@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Building2, Car, Store, ArrowRight, MapPin } from "lucide-react";
+import { Building2, Car, Store, ArrowRight, MapPin, Sparkles } from "lucide-react";
 import { formatPrice } from "@/lib/mockData";
 import { CATEGORY_LABELS, CATEGORY_COLORS, Listing } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -42,6 +42,35 @@ export default async function HomePage() {
             >
               Přidat inzerát
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Search Highlight */}
+      <section className="bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 p-6 md:p-8 text-white shadow-lg">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 text-blue-100 font-semibold mb-2">
+                  <Sparkles className="h-5 w-5" />
+                  Hlavní novinka
+                </div>
+                <h2 className="text-2xl md:text-3xl font-extrabold mb-2">
+                  AI asistent pro vyhledávání inzerátů
+                </h2>
+                <p className="text-blue-100 max-w-2xl">
+                  Napište přirozeně, co hledáte, a AI vám doporučí nejlepší nabídky včetně přímých odkazů.
+                </p>
+              </div>
+              <Link
+                href="/chat"
+                className="inline-flex items-center justify-center rounded-lg bg-white text-blue-700 hover:bg-blue-50 px-6 py-3 font-bold shadow-md"
+              >
+                Otevřít AI chat
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

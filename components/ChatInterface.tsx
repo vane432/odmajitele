@@ -14,6 +14,29 @@ interface Message {
   content: string;
 }
 
+function renderMessageWithLinks(content: string) {
+  const lines = content.split('\n');
+  return lines.map((line, idx) => {
+    const match = line.match(/\/listing\/[a-zA-Z0-9-]+/);
+    if (!match) return <div key={idx}>{line}</div>;
+
+    const href = match[0];
+    const [before, after] = line.split(href);
+    return (
+      <div key={idx}>
+        {before}
+        <a
+          href={href}
+          className="underline font-semibold text-blue-700 hover:text-blue-900"
+        >
+          {href}
+        </a>
+        {after}
+      </div>
+    );
+  });
+}
+
 const SUGGESTED_PROMPTS: SuggestedPrompt[] = [
   { text: 'Hledám rodinný dům v Brně pod 15M CZK', icon: '🏡' },
   { text: 'Luxusní auto s malým nájezdem', icon: '🚗' },
@@ -96,7 +119,13 @@ export default function ChatInterface() {
         if (done) break;
 
         const chunk = decoder.decode(value);
-        accumulatedText += chunk;
+        // Normalize SSE-like chunks into plain text for UI
+        const normalized = chunk
+          .split('\n')
+          .filter((line) => line && !line.startsWith('event:'))
+          .map((line) => (line.startsWith('data:') ? line.replace(/^data:\s?/, '') : line))
+          .join('\n');
+        accumulatedText += normalized;
 
         // Update the assistant message with accumulated text
         setMessages((prev) =>
@@ -183,7 +212,7 @@ export default function ChatInterface() {
                 </div>
               )}
               <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                {message.content}
+                {renderMessageWithLinks(message.content)}
               </div>
             </div>
           </div>

@@ -6,6 +6,39 @@ import { generateEmbedding } from '@/lib/openai';
 
 export const maxDuration = 30;
 
+type ListingMatch = {
+  id: string;
+  title: string;
+  category: string;
+  price: number;
+  location: string;
+  description: string;
+  features?: Record<string, string | number>;
+  similarity?: number;
+};
+
+function formatListingsFallback(query: string, listings: ListingMatch[]) {
+  if (!listings.length) {
+    return `Nenašel jsem teď relevantní nabídky pro: "${query}". Zkuste prosím upřesnit lokalitu, rozpočet nebo kategorii.`;
+  }
+
+  const top = listings.slice(0, 3);
+  const rows = top
+    .map((listing, index) => {
+      const similarity =
+        typeof listing.similarity === 'number'
+          ? ` (relevance ${(listing.similarity * 100).toFixed(1)}%)`
+          : '';
+      return `${index + 1}. ${listing.title}${similarity}
+Cena: ${listing.price.toLocaleString('cs-CZ')} CZK
+Lokalita: ${listing.location}
+Otevřít: /listing/${listing.id}`;
+    })
+    .join('\n\n');
+
+  return `Našel jsem pro vás tyto nabídky:\n\n${rows}\n\nKlikněte na odkaz "Otevřít" pro detail nabídky.`;
+}
+
 /**
  * POST /api/chat
  * Conversational AI search endpoint with RAG (Retrieval-Augmented Generation)
@@ -26,20 +59,34 @@ export async function POST(req: NextRequest) {
     const userQuery = lastMessage.content;
 
     console.log(`\n🔍 AI Search Query: "${userQuery}"\n`);
-
-    // Step 1: Generate embedding for the user's query
-    const queryEmbedding = await generateEmbedding(userQuery);
-
-    // Step 2: Search for similar listings using pgvector
     const supabase = await createClient();
-    const { data: relevantListings, error } = await supabase.rpc('match_listings', {
-      query_embedding: queryEmbedding,
-      match_threshold: 0.3, // 30% similarity threshold
-      match_count: 5, // Top 5 most relevant
-    });
 
-    if (error) {
-      console.error('Error searching listings:', error);
+    let relevantListings: ListingMatch[] = [];
+
+    // Step 1+2: Semantic search with embeddings; fallback to keyword search if OpenAI fails
+    try {
+      const queryEmbedding = await generateEmbedding(userQuery);
+      const { data, error } = await supabase.rpc('match_listings', {
+        query_embedding: queryEmbedding,
+        match_threshold: 0.3,
+        match_count: 5,
+      });
+
+      if (error) {
+        console.error('Error searching listings:', error);
+      } else {
+        relevantListings = (data ?? []) as ListingMatch[];
+      }
+    } catch (embedErr) {
+      console.error('Embedding failed, falling back to keyword search:', embedErr);
+      const keyword = userQuery.trim().slice(0, 80);
+      const { data } = await supabase
+        .from('listings')
+        .select('id,title,category,price,location,description,features')
+        .or(`title.ilike.%${keyword}%,description.ilike.%${keyword}%,location.ilike.%${keyword}%`)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      relevantListings = (data ?? []) as ListingMatch[];
     }
 
     console.log(`✅ Found ${relevantListings?.length || 0} relevant listings\n`);
@@ -58,6 +105,7 @@ export async function POST(req: NextRequest) {
 
         context += `${index + 1}. ${listing.title}\n`;
         context += `   ID: ${listing.id}\n`;
+        context += `   Link: /listing/${listing.id}\n`;
         context += `   Kategorie: ${listing.category}\n`;
         context += `   Cena: ${listing.price.toLocaleString('cs-CZ')} CZK\n`;
         context += `   Lokace: ${listing.location}\n`;
@@ -82,6 +130,8 @@ ROLE:
 
 PRAVIDLA:
 - VŽDY cituj konkrétní nabídky z kontextu níže (používej ID a název)
+- VŽDY cituj konkrétní nabídky z kontextu níže (používej ID a název)
+- U každé doporučené nabídky uveď i přímý odkaz ve formátu: /listing/{id}
 - Pokud uživatel hledá něco, co není v nabídkách, upřímně to řekni
 - Doporuč max 2-3 nejrelevantnější nabídky, ne všechny
 - Shrň klíčové výhody každé nabídky
@@ -109,19 +159,29 @@ PŘÍKLAD ODPOVĚDI:
 
 Chcete se podívat na některou z těchto nabídek podrobněji?"`;
 
-    // Step 5: Stream the LLM response
-    const result = streamText({
-      model: openai('gpt-4o-mini'),
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages,
-      ],
-      temperature: 0.7,
-    });
+    // Step 5: Stream LLM response; fallback to deterministic response if model fails
+    try {
+      const result = streamText({
+        model: openai('gpt-4o-mini'),
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...messages,
+        ],
+        temperature: 0.7,
+      });
 
-    return result.toTextStreamResponse();
+      return result.toTextStreamResponse();
+    } catch (llmErr) {
+      console.error('LLM failed, returning fallback response:', llmErr);
+      return new Response(formatListingsFallback(userQuery, relevantListings), {
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      });
+    }
   } catch (error) {
     console.error('Error in /api/chat:', error);
-    return new Response('Internal server error', { status: 500 });
+    return new Response(
+      'AI asistent je dočasně nedostupný. Zkuste to prosím za chvíli.',
+      { status: 500 }
+    );
   }
 }
