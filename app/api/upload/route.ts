@@ -5,7 +5,12 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const adminSupabase = createAdminClient();
+    let adminSupabase: ReturnType<typeof createAdminClient> | null = null;
+    try {
+      adminSupabase = createAdminClient();
+    } catch (adminError) {
+      console.warn('Admin Supabase client unavailable, falling back to session client:', adminError);
+    }
     
     // Check authentication
     const {
@@ -58,7 +63,8 @@ export async function POST(request: NextRequest) {
     const uint8Array = new Uint8Array(arrayBuffer);
 
     // Upload to Supabase Storage
-    const { data, error } = await adminSupabase.storage
+    const uploader = adminSupabase ?? supabase;
+    const { data, error } = await uploader.storage
       .from('listing-images')
       .upload(fileName, uint8Array, {
         contentType: file.type,
@@ -68,7 +74,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Storage upload error:', error);
       return NextResponse.json(
-        { error: 'Chyba při nahrávání souboru' },
+        { error: `Chyba při nahrávání souboru: ${error.message}` },
         { status: 500 }
       );
     }

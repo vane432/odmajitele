@@ -34,7 +34,13 @@ export function ImageUpload({
         method: 'POST',
         body: formData,
       })
-      .then(response => response.json())
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Upload failed');
+        }
+        return data;
+      })
       .then(data => {
         if (data.success) {
           return data.url;
@@ -53,7 +59,7 @@ export function ImageUpload({
       onUpload(newImages);
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Chyba při nahrávání obrázků. Zkuste to znovu.');
+      alert(`Chyba při nahrávání obrázků: ${error instanceof Error ? error.message : 'Zkuste to znovu.'}`);
     } finally {
       setUploading(false);
     }
