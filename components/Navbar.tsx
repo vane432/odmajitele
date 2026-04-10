@@ -52,21 +52,21 @@ export function Navbar() {
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
             <Link
-              href="/?category=nemovitosti"
+              href="/kategorie/nemovitosti"
               className="flex items-center space-x-2 text-slate-700 hover:text-slate-900 transition-colors"
             >
               <Building2 className="h-5 w-5" />
               <span className="font-medium">Nemovitosti</span>
             </Link>
             <Link
-              href="/?category=auta"
+              href="/kategorie/auta"
               className="flex items-center space-x-2 text-slate-700 hover:text-slate-900 transition-colors"
             >
               <Car className="h-5 w-5" />
               <span className="font-medium">Auta</span>
             </Link>
             <Link
-              href="/?category=firmy"
+              href="/kategorie/firmy"
               className="flex items-center space-x-2 text-slate-700 hover:text-slate-900 transition-colors"
             >
               <Store className="h-5 w-5" />

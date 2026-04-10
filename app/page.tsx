@@ -94,21 +94,21 @@ export default async function HomePage() {
               title="Nemovitosti"
               description="Byty, domy a pozemky přímo od majitelů"
               icon={<Building2 className="h-12 w-12" />}
-              href="/?category=nemovitosti"
+              href="/kategorie/nemovitosti"
               color="from-blue-500 to-blue-600"
             />
             <CategoryCard
               title="Auta"
               description="Prémiová vozidla ve výborném stavu"
               icon={<Car className="h-12 w-12" />}
-              href="/?category=auta"
+              href="/kategorie/auta"
               color="from-purple-500 to-purple-600"
             />
             <CategoryCard
               title="Firmy"
               description="Zavedené byznysy a e-shopy"
               icon={<Store className="h-12 w-12" />}
-              href="/?category=firmy"
+              href="/kategorie/firmy"
               color="from-green-500 to-green-600"
             />
           </div>

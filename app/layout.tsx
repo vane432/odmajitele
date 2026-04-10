@@ -78,17 +78,17 @@ function Footer() {
             <h3 className="font-bold text-lg mb-4">Kategorie</h3>
             <ul className="space-y-2 text-slate-400">
               <li>
-                <Link href="/?category=nemovitosti" className="hover:text-white transition-colors">
+                <Link href="/kategorie/nemovitosti" className="hover:text-white transition-colors">
                   Nemovitosti
                 </Link>
               </li>
               <li>
-                <Link href="/?category=auta" className="hover:text-white transition-colors">
+                <Link href="/kategorie/auta" className="hover:text-white transition-colors">
                   Auta
                 </Link>
               </li>
               <li>
-                <Link href="/?category=firmy" className="hover:text-white transition-colors">
+                <Link href="/kategorie/firmy" className="hover:text-white transition-colors">
                   Firmy
                 </Link>
               </li>
