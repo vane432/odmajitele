@@ -17,6 +17,15 @@ type ListingMatch = {
   similarity?: number;
 };
 
+function extractKeywords(query: string) {
+  return query
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 2)
+    .slice(0, 6);
+}
+
 function formatListingsFallback(query: string, listings: ListingMatch[]) {
   if (!listings.length) {
     return `Nenašel jsem teď relevantní nabídky pro: "${query}". Zkuste prosím upřesnit lokalitu, rozpočet nebo kategorii.`;
@@ -68,7 +77,7 @@ export async function POST(req: NextRequest) {
       const queryEmbedding = await generateEmbedding(userQuery);
       const { data, error } = await supabase.rpc('match_listings', {
         query_embedding: queryEmbedding,
-        match_threshold: 0.3,
+        match_threshold: 0.18,
         match_count: 5,
       });
 
@@ -79,11 +88,30 @@ export async function POST(req: NextRequest) {
       }
     } catch (embedErr) {
       console.error('Embedding failed, falling back to keyword search:', embedErr);
-      const keyword = userQuery.trim().slice(0, 80);
+    }
+
+    // Fallback also when semantic search returns no results
+    if (!relevantListings.length) {
+      const keywords = extractKeywords(userQuery);
+      if (keywords.length) {
+        const keywordOr = keywords
+          .map((kw) => `title.ilike.%${kw}%,description.ilike.%${kw}%,location.ilike.%${kw}%`)
+          .join(',');
+        const { data } = await supabase
+          .from('listings')
+          .select('id,title,category,price,location,description,features')
+          .or(keywordOr)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        relevantListings = (data ?? []) as ListingMatch[];
+      }
+    }
+
+    // Last-resort fallback so assistant never says "nothing" when listings exist
+    if (!relevantListings.length) {
       const { data } = await supabase
         .from('listings')
         .select('id,title,category,price,location,description,features')
-        .or(`title.ilike.%${keyword}%,description.ilike.%${keyword}%,location.ilike.%${keyword}%`)
         .order('created_at', { ascending: false })
         .limit(5);
       relevantListings = (data ?? []) as ListingMatch[];
@@ -129,7 +157,6 @@ ROLE:
 - Odpovídáš v jazyce, kterým se na tebe uživatel ptá (čeština nebo angličtina)
 
 PRAVIDLA:
-- VŽDY cituj konkrétní nabídky z kontextu níže (používej ID a název)
 - VŽDY cituj konkrétní nabídky z kontextu níže (používej ID a název)
 - U každé doporučené nabídky uveď i přímý odkaz ve formátu: /listing/{id}
 - Pokud uživatel hledá něco, co není v nabídkách, upřímně to řekni
